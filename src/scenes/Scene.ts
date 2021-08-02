@@ -11,7 +11,7 @@ export default class Scene extends Phaser.Scene {
     private gameOver: boolean = false;
 
     constructor() {
-        super('hello-world')
+        super('star-addict');
     }
 
     preload() {
@@ -25,56 +25,32 @@ export default class Scene extends Phaser.Scene {
         );
     }
 
-
     create() {
-
 
         // display sky
         this.add.image(400, 300, 'sky');
 
-        // declare platforms and set to staticGroup
-        // groups items of static properties together
-        // static items cannot have gravity and such acted on them
-        this.platforms = this.physics.add.staticGroup();
         this.bombs = this.physics.add.group();
-        // create ground variable
-        const ground: Phaser.Physics.Arcade.Sprite = this.platforms.create(400, 568, 'ground');
-        // double size of ground as it won't fit to screen otherwise
-        ground.setScale(2).refreshBody();
-
-        this.platforms.create(600, 400, 'ground');
-        this.platforms.create(50, 250, 'ground');
-        this.platforms.create(750, 220, 'ground');
-
-
-        this.player = this.physics.add.sprite(100, 450, 'dude');
-        this.player.setBounce(0.2);
-        this.player.setCollideWorldBounds(true);
-        this.player.setGravityY(300);
-
-        this.physics.add.collider(this.player, this.platforms);
-
         this.cursors = this.input.keyboard.createCursorKeys();
 
-        this.stars = this.physics.add.group({
-            key: 'star',
-            // create a star 11 more times
-            repeat: 11,
-            // starts at x12 and places in steps of c70
-            setXY: { x: 12, y: 0, stepX: 70 }
-        });
+        this.initializeStar();
+        this.initializeCollisions();
+        this.initializePlayerAnims();
 
-        this.stars.children.iterate(function (child) {
-            const c = child as Phaser.Physics.Arcade.Image;
-            c.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
-        });
+        this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', color: '#000' });
 
-        this.physics.add.collider(this.stars, this.platforms);
-        this.physics.add.overlap(this.player, this.stars, this.collectStar, undefined, this);
+    }
 
-        this.physics.add.collider(this.bombs, this.platforms);
-        this.physics.add.collider(this.player, this.bombs, this.hitBomb, undefined, this);
+    initializeCollisions() {
+        this.physics.add.collider(this.stars!, this.platforms!);
+        // setup method to be called on overlap
+        this.physics.add.overlap(this.player!, this.stars!, this.collectStar, undefined, this);
+        this.physics.add.collider(this.player!, this.platforms!);
+        this.physics.add.collider(this.bombs!, this.platforms!);
+        this.physics.add.collider(this.player!, this.bombs!, this.hitBomb, undefined, this);
+    }
 
+    initializePlayerAnims() {
         // uses frame 0-3 and runs at 10 frames per second
         // -1 tells animation to loop
         // Define animation once and can set it to mulitple objects
@@ -97,9 +73,47 @@ export default class Scene extends Phaser.Scene {
             frameRate: 10,
             repeat: -1
         })
-        this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', color: '#000' });
-
     }
+
+    initializePlatforms() {
+        // declare platforms and set to staticGroup
+        // groups items of static properties together
+        // static items cannot have gravity and such acted on them
+        this.platforms = this.physics.add.staticGroup();
+
+        // create ground variable
+        const ground: Phaser.Physics.Arcade.Sprite = this.platforms.create(400, 568, 'ground');
+        // double size of ground as it won't fit to screen otherwise
+        ground.setScale(2).refreshBody();
+
+        this.platforms.create(600, 400, 'ground');
+        this.platforms.create(50, 250, 'ground');
+        this.platforms.create(750, 220, 'ground');
+    }
+
+    initializePlayer() {
+        this.player = this.physics.add.sprite(100, 450, 'dude');
+        this.player.setBounce(0.2);
+        this.player.setCollideWorldBounds(true);
+        this.player.setGravityY(300);
+    }
+
+    // creates all stars setting their bounce rate and location on screen
+    initializeStar() {
+        this.stars = this.physics.add.group({
+            key: 'star',
+            // create a star 11 more times
+            repeat: 11,
+            // starts at x12 and places in steps of c70
+            setXY: { x: 12, y: 0, stepX: 70 }
+        });
+
+        this.stars.children.iterate(function (child) {
+            const c = child as Phaser.Physics.Arcade.Image;
+            c.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+        });
+    }
+
     update() {
         if (this.cursors?.left.isDown) {
             this.player?.setVelocityX(-160);
