@@ -33,9 +33,12 @@ export default class Scene extends Phaser.Scene {
         this.bombs = this.physics.add.group();
         this.cursors = this.input.keyboard.createCursorKeys();
 
+        this.initializePlatforms();
         this.initializeStar();
+        this.initializePlayer();
         this.initializeCollisions();
         this.initializePlayerAnims();
+
 
         this.scoreText = this.add.text(16, 16, 'Score: 0', { fontSize: '32px', color: '#000' });
 
